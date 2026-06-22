@@ -1749,8 +1749,8 @@ if 'timepoint_order_col' in locals() or 'timepoint_order_col' in globals():
 # --- 2. Setup Grouping Options ---
 # Automatically grab any categorical columns with reasonable cardinality (< 35 unique values)
 group_opts = [
-    col for col in df.columns
-    if col not in exclude_cols and df[col].nunique() < 35
+    col for col in plot_df.columns
+    if col not in exclude_cols and plot_df[col].nunique() < 35
 ]
 
 # --- 3. DEFINE PLOTTING FUNCTION ---
@@ -1776,10 +1776,10 @@ def create_richness_plot(data, group_col, custom_order=None):
     fig = px.box(
         data,
         x=group_col,
-        y='num_TCRs', 
+        y='hill_q0',
         color=group_col,
-        points='all', 
-        hover_data=hover_cols, 
+        points='all',
+        hover_data=hover_cols,
         category_orders={group_col: unique_cats},
         template="simple_white",
         title=f"TCR Richness by {group_col}"
@@ -1791,34 +1791,34 @@ def create_richness_plot(data, group_col, custom_order=None):
     # Center the dots and apply jitter so they don't overlap entirely
     for trace in fig.data:
         if isinstance(trace, go.Box):
-            trace.pointpos = 0  
-            trace.jitter = 0.2  
+            trace.pointpos = 0
+            trace.jitter = 0.2
 
     # --- FINAL LAYOUT ---
     fig.update_layout(
         xaxis_title=group_col,
         yaxis_title="Number of Unique TCRs",
-        xaxis=dict(tickfont=dict(size=15)), 
+        xaxis=dict(tickfont=dict(size=15)),
         margin=dict(t=60),
         showlegend=False,
         width=700,
         height=600,
         plot_bgcolor='rgba(0,0,0,0)'
     )
-    
+
     fig.update_yaxes(showgrid=True, gridcolor='lightgrey')
-    
+
     fig.show()
 
 # --- 4. EXECUTION LOOP ---
 print("::: {.panel-tabset}\n\n")
 
 for group in group_opts:
-    if df[group].dropna().empty:
+    if plot_df[group].dropna().empty:
         continue
-        
+
     print(f"## {group}\n\n")
-    create_richness_plot(df, group)
+    create_richness_plot(plot_df, group)
     print("\n")
 
 print(":::\n\n")

@@ -124,7 +124,7 @@ category_map = dict(zip(private_df['CDR3b'], private_df[subject_col]))
 
 def get_node_category(cdr3):
     if cdr3 in public_cdr3s: return "Shared"
-    return category_map.get(cdr3, "Unknown")
+    return str(category_map.get(cdr3, "Unknown"))
 
 # --- 2. Build Graph ---
 # Isolate just the 4 core GLIPH columns in case extra were appended during concatenation

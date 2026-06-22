@@ -637,13 +637,13 @@ concat_df = concat_df.merge(meta[['sample', 'origin', timepoint_col, timepoint_o
 def create_upset_tabs(df, patient_list):
     """Generates Quarto tabs per patient, displaying native Matplotlib UpSet plots."""
     print("::: {.panel-tabset}\n")
-    
+
     for patient_id in patient_list:
         print(f"## {patient_id}\n")
-        
+
         patient_df = df[df[subject_col] == patient_id]
         timepoints = sorted(patient_df[timepoint_col].unique())
-        
+
         # Extracting clones (CDR3b) by timepoint
         clones_by_timepoint = {tp: set(patient_df[patient_df[timepoint_col] == tp]['CDR3b']) for tp in timepoints}
 
@@ -2076,7 +2076,7 @@ for pat in patients:
     # --- Plot 1: Repertoire Composition (Barplot) ---
     pt_bar_data = pat_df.groupby([timepoint_col, timepoint_order_col, 'Category']).agg(
         total_freq=('freq', 'sum'),
-        tcr_count=('cdr3aa', 'count')
+        tcr_count=('cdr3aa', 'nunique')
     ).reset_index().sort_values(timepoint_order_col)
 
     for cat in cat_colors.keys():
@@ -2526,6 +2526,5 @@ plot_public_clones_upset(concat_df, subject_col=subject_col, min_shared_patients
 ```
 **Figure 8. UpSet plot of public TCR clones**. This plot illustrates the intersection of unique CDR3b sequences shared among multiple individuals. The horizontal bars on the left indicate the total number of unique clones identified in each individual patient. In the central matrix, connected black dots denote the specific combination of patients sharing a subset of clones. The vertical bars at the top represent the intersection size, indicating the exact number of public clones shared exclusively by the patients marked in the corresponding column below.
 
-{{< include ./template_pheno_sc.qmd >}}
 
-{{< include ./template_pheno_bulk.qmd >}}
+
