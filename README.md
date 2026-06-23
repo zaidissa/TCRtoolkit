@@ -22,7 +22,6 @@ Users interact with one pipeline and one set of outputs. The choice of which eng
   - [Mode 2: Single-cell](#mode-2-single-cell)
     - [Full SC sub-mode](#full-sc-sub-mode)
     - [VDJ-only sub-mode](#vdj-only-sub-mode)
-  - [Mode 3: Combined](#mode-3-combined)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 - [Architecture](#architecture)
@@ -64,8 +63,8 @@ Two containers are used automatically — no manual installation of tools requir
 ## Installation
 
 ```bash
-git clone https://github.com/WangLab-ComputationalBiology/TCR-Toolkit-SCRATCH.git
-cd TCR-Toolkit-SCRATCH
+git clone https://github.com/KarchinLab/TCRtoolkit.git
+cd TCR-Toolkit
 ```
 
 ---
@@ -106,41 +105,19 @@ nextflow run main.nf \
 
 Omitting `--input_annotated_object` triggers VDJ-only mode automatically.
 
-### Mode 3 — Combined (bulk + single-cell)
 
-```bash
-nextflow run main.nf \
-  --mode combined \
-  --samplesheet bulk_samplesheet.csv \
-  --input_format airr \
-  --input_annotated_object annotated_seurat.RDS \
-  --input_vdj_contigs "data/VDJ/*/outs" \
-  --sample_sheet sc_samplesheet.csv \
-  --outdir results/combined \
-  --project_name my_combined_run
-```
-
-### Run with Singularity (HPC)
+### Profile
 
 Add `-profile singularity` to any of the commands above:
 
 ```bash
-nextflow run main.nf -profile singularity \
+nextflow run main.nf -profile singularity/docker \
   --input_annotated_object annotated_seurat.RDS \
   --input_vdj_contigs "data/VDJ/*/outs" \
   --sample_sheet sc_samplesheet.csv \
   --outdir results
 ```
 
-### Run on LSF cluster
-
-```bash
-nextflow run main.nf -profile lsf,singularity \
-  --input_annotated_object annotated_seurat.RDS \
-  --input_vdj_contigs "data/VDJ/*/outs" \
-  --sample_sheet sc_samplesheet.csv \
-  --outdir results
-```
 
 ---
 
@@ -275,35 +252,7 @@ HRS371754,/data/SCRATCH_ALIGN-CELLRANGER_VDJ/HRS371754/outs
 HRS371755,/data/SCRATCH_ALIGN-CELLRANGER_VDJ/HRS371755/outs
 ```
 
----
 
-### Mode 3: Combined
-
-When both bulk and single-cell TCR data are available for the same study (e.g., paired bulk + scRNA-seq).
-
-```
-┌─ Track A: Bulk ──────────────────────────────────────────────┐
-│  INPUT_CHECK → CONVERT → ANNOTATE                            │
-│  → SAMPLE (pGen, diversity, convergence, VDJdb, TCRdist3)    │
-│  → PATIENT (GIANA, GLIPH2)                                   │
-│  → COMPARE (TCR sharing)                                     │
-└──────────────────────────────┬───────────────────────────────┘
-                               │
-┌─ Track B: Single-cell ───────┼───────────────────────────────┐
-│  VDJ_QC → TCELL_INTEGRATION  │                               │
-│  → TCRi, CoNGA               │                               │
-│  → GLIPH2, TCRdist3, GIANA   │                               │
-│  → CONSENSUS                 │                               │
-│  → REPERTOIRE                │                               │
-└──────────────────────────────┼───────────────────────────────┘
-                               ▼
-                       MASTER SUMMARY
-               (aggregates outputs from both tracks)
-```
-
-Both tracks run in parallel. Nextflow manages the parallelism automatically. The only synchronization point is Master Summary, which waits for all enabled modules to complete before generating the final report.
-
----
 
 ## Parameters
 
@@ -416,9 +365,6 @@ results/
 └── VDJ_QC/                         — VDJ_QC_analysis.html + QC tables/figures
 ```
 
-### Combined mode outputs
-
-Combines all outputs from both bulk and single-cell modes above into a single `results/` directory.
 
 ---
 
@@ -431,17 +377,9 @@ main.nf                      ← detects mode + sub-mode, routes to one of three
   │
   ├── workflows/bulk.nf       ← Scenario 1: TCRtoolkit bulk analysis
   ├── workflows/singlecell.nf ← Scenario 2: branches on GEX object presence
-  │     ├── Full SC path: VDJ_QC → TCELL_INTEGRATION → Bridge 1 → TCRtoolkit + SC modules
-  │     └── VDJ-only path: VDJ_QC → Bridge 3 → TCRtoolkit bulk analysis only
-  └── workflows/combined.nf   ← Scenario 3: both tracks in parallel
-        │
-        ├── subworkflows/bulk/       ← TCRtoolkit subworkflows (8 modules)
-        ├── subworkflows/scratch/    ← SCRATCH-TCR subworkflows (10 modules)
-        └── subworkflows/bridges/    ← Bridge 1, Bridge 2, Bridge 3
-              │
-              ├── modules/bulk/      ← TCRtoolkit modules/local/
-              ├── modules/scratch/   ← SCRATCH-TCR modules/local/
-              └── modules/bridges/   ← Bridge process definitions
+        ├── Full SC path: VDJ_QC → TCELL_INTEGRATION → Bridge 1 → TCRtoolkit + SC modules
+        └── VDJ-only path: VDJ_QC → Bridge 3 → TCRtoolkit bulk analysis only
+ 
 ```
 
 ---
@@ -539,8 +477,5 @@ nextflow run main.nf -profile singularity \
 ---
 
 ## Contact
-
-- Syed Zaidi — sazaidi@mdanderson.org
-- Wang Lab, MD Anderson Cancer Center
 
 For issues and contributions, please open a GitHub issue or pull request.
