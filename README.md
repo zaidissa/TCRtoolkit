@@ -38,7 +38,6 @@ Users interact with one pipeline and one set of outputs. The choice of which eng
 | `bulk` | — | AIRR / Adaptive / CellRanger TSV files | Full TCRtoolkit repertoire analysis |
 | `singlecell` | **Full SC** | Seurat RDS + Cell Ranger VDJ outs + sample sheet | VDJ QC → T-cell integration → TCRtoolkit bulk analysis → SC clustering (CONGA, GLIPH2, TCRdist3, GIANA) → Consensus → Master Summary |
 | `singlecell` | **VDJ-only** | Cell Ranger VDJ outs + sample sheet *(no GEX object)* | VDJ QC → TCRtoolkit bulk analysis only; SC clustering modules are skipped |
-| `combined` | — | All of the above | Both bulk and SC tracks run in parallel; outputs aggregated in Master Summary |
 
 The mode is auto-detected from the inputs you provide. Within `singlecell` mode, the sub-mode is also auto-detected: if `--input_annotated_object` is absent, the pipeline switches to VDJ-only automatically. You can also set the mode explicitly with `--mode bulk | singlecell | combined`.
 
@@ -60,13 +59,14 @@ Two containers are used automatically — no manual installation of tools requir
 
 ---
 
+
+
 ## Installation
 
 ```bash
 git clone https://github.com/KarchinLab/TCRtoolkit.git
 cd TCR-Toolkit
 ```
-
 ---
 
 ## Quick Start
@@ -108,7 +108,7 @@ Omitting `--input_annotated_object` triggers VDJ-only mode automatically.
 
 ### Profile
 
-Add `-profile singularity` to any of the commands above:
+Add `-profile singularity or docker` to any of the commands above:
 
 ```bash
 nextflow run main.nf -profile singularity/docker \
